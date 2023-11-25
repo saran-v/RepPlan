@@ -31,7 +31,10 @@ def createDir(vendorId, timeStr):
     else:
         print("Directory already exists")
 
-    os.chdir(r"S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs")
+    # r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplanOpt\Inputs"
+    # os.chdir(r"S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs")
+    os.chdir(r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs")
+
 
     if not os.path.exists(timeStr):
         try:
@@ -67,10 +70,13 @@ def prepareItemDC(vendorId):
     df['confirmedQty'] = df['confirmedQty'].fillna(0)
 
     df['Avg Fcst Units'] = df['Avg Fcst Units'].fillna(0)
+    df['Avg Fcst Cost'] = df['Avg Fcst Cost'].fillna(0)
+    df = df.replace({'': 0, ' ': 0, float('NaN'): 0})
 
     df['on_hand'] = (df['Unrestricted Stock'] + df['STO Inbound Qty'] ) - (df['confirmedQty'] + df['STO Outbound Qty'])
     df['sales'] = df['confirmedQty'] + df['Avg Fcst Units']
     df['cost'] = df['Avg Fcst Cost']/df["Avg Fcst Units"]
+    df['cost'] = df['cost'].fillna(0)
 
     final_df = df[['Article', 'site', 'Article Description', 'Vendor ID', 'Vendor Name', 'Family Code - Key', 'Family_Code_Desc','on_hand','Weeks Of Supply For SS','sales','Volume','DSX LeadTime','cost','MaxCubesPerContainer','Incoterm Group','Minor_Code','Minor_Code_Description','Origin Country']]
     final_df.rename(columns={'Article': 'item', 'site': 'location', 'Article Description' : 'item_desc', 'Vendor ID': 'vendor_id',
@@ -120,8 +126,8 @@ def  JavaScipRun(vendorId, timeStr):
     if os.path.isfile("result_java.csv"):
         os.remove("result_java.csv")
 
-    _base_cmd = ['java', '-classpath',
-                 'RepPlan.jar;jna-5.11.0.jar;ortools-win32-x86-64-9.5.2237.jar;protobuf-java-3.21.5.jar;ortools-java-9.5.2237.jar;mssql-jdbc-12.2.0.jre8.jar',
+    _base_cmd = ['D:\\amazon-corretto-8.392.08.1-windows-x64-jdk\jdk1.8.0_392\\bin\java', '-classpath',
+                 'RepPlan.jar;jna-5.11.0.jar;ortools-win32-x86-64-9.5.2237.jar;protobuf-java-3.21.5.jar;ortools-java-9.5.2237.jar;mssql-jdbc-12.2.0.jre8.jar;.;',
                  '-Djava.library.path=D:\Scripts\OPT\RepModel\Opt',
                  'com.optimizer.Optimizer']  # works
 
@@ -131,13 +137,14 @@ def  JavaScipRun(vendorId, timeStr):
     while not os.path.exists('result_java.csv'):
         time.sleep(1)
 
-    shutil.copyfile("PO_Data_Summary_Out.csv", "S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "\\PO_Data_Summary_Out_" +  timeStr + vendorId + ".csv")
-    shutil.copyfile("PO_Data_Summary_Out_Master_DB.csv", "S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "\\PO_Data_Summary_Out_Master_DB_" +  timeStr + vendorId +".csv")
+    # r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplanOpt\Inputs"
+    shutil.copyfile("PO_Data_Summary_Out.csv", r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "\\PO_Data_Summary_Out_" +  timeStr + vendorId + ".csv")
+    shutil.copyfile("PO_Data_Summary_Out_Master_DB.csv", r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "\\PO_Data_Summary_Out_Master_DB_" +  timeStr + vendorId +".csv")
 
-    shutil.copyfile("Plot_Data_out.csv", "S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\Plot_Data_out_" +  timeStr + vendorId + ".csv")
-    shutil.copyfile("Po_Performance_out.csv", "S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\Po_Performance_out_" + timeStr + vendorId + ".csv")
-    shutil.copyfile("StockOut_Summary_out.csv", "S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\StockOut_Summary_out_" + timeStr + vendorId + ".csv")
-    shutil.copyfile("PO_Exception_Out.csv", "S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\PO_Exception_Out_" + timeStr + vendorId + ".csv")
+    shutil.copyfile("Plot_Data_out.csv", r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\Plot_Data_out_" +  timeStr + vendorId + ".csv")
+    shutil.copyfile("Po_Performance_out.csv", r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\Po_Performance_out_" + timeStr + vendorId + ".csv")
+    shutil.copyfile("StockOut_Summary_out.csv", r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\StockOut_Summary_out_" + timeStr + vendorId + ".csv")
+    shutil.copyfile("PO_Exception_Out.csv", r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\PO_Exception_Out_" + timeStr + vendorId + ".csv")
 
     os.chdir(r"D:\Scripts\OPT\RepModel\Opt")
 
@@ -148,7 +155,7 @@ def  JavaScipRun(vendorId, timeStr):
 
 def readVendorList():
     vendorList = []
-    os.chdir(r"S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Inputs")
+    os.chdir(r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Inputs")
     #os.chdir(r"S:\ReplenishOpt\Inputs")
     shutil.copyfile('config.csv', r"D:\Scripts\OPT\RepModel\Opt\config.csv")
     shutil.copyfile('vendorList.csv', r"D:\Scripts\OPT\RepModel\Opt\vendorList.csv")
@@ -164,7 +171,7 @@ def readVendorList():
 
 def writePlotDataOut(vendorId,timeStr):
     try:
-        data = pd.read_csv(r'S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\' + timeStr + '_aux\\Plot_Data_out_' +  timeStr + vendorId + '.csv')
+        data = pd.read_csv(r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + '_aux\\Plot_Data_out_' +  timeStr + vendorId + '.csv')
         df = pd.DataFrame(data)
         df = df.fillna(value=0)
 
@@ -198,7 +205,7 @@ def createExcepTable(vendorId):
 
 def writeExcepOutData(vendorId,timeStr):
     data = pd.read_csv(
-        r"S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\PO_Exception_Out_" + timeStr + vendorId + ".csv")
+        r"\\File-Share\Bobs_ShareMerchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\PO_Exception_Out_" + timeStr + vendorId + ".csv")
     df = pd.DataFrame(data)
     df = df.fillna(value=0)
 
@@ -213,7 +220,7 @@ def writeExcepOutData(vendorId,timeStr):
 
 def writeStockOutData(vendorId,timeStr):
     try:
-        data = pd.read_csv(r"S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\StockOut_Summary_out_" + timeStr + vendorId + ".csv")
+        data = pd.read_csv(r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "_aux\\StockOut_Summary_out_" + timeStr + vendorId + ".csv")
         df = pd.DataFrame(data)
         df = df.fillna(value=0)
 
@@ -239,17 +246,17 @@ def writeStockOutData(vendorId,timeStr):
 
 def writePODataOutSummaryMasterDB(vendorId,timeStr):
     try:
-        data = pd.read_csv(r"S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "\\PO_Data_Summary_Out_Master_DB_" + timeStr + vendorId + ".csv")
+        data = pd.read_csv(r"\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\\" + timeStr + "\\PO_Data_Summary_Out_Master_DB_" + timeStr + vendorId + ".csv")
         df = pd.DataFrame(data)
 
         cursor = conn.cursor()
         for row in df.itertuples():
             cursor.execute('''
                         INSERT INTO opt.Po_data_summary_out_stage ([RunDate],[Planner] ,[ItemGroup],[Family_Code],[Item],[Site],[Article_Desc],[Vendor_Id],[Vendor_Name],[PO_Index],[PO_Week_Date]
-                        ,[PO_Week],[PO_Year],[POs],[Item_Volume],[Volume],[Wos],[PO_Volume],[SS_Weeks],[WOS_SS_Ratio]) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) 
+                        ,[PO_Week],[PO_Year],[POs],[Item_Volume],[Volume],[Wos],[PO_Volume],[SS_Weeks],[WOS_SS_Ratio],[WK_AFTER_LT]) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) 
                         ''',
                            row.RunDate, row.Planner, row.ItemGroup, row.Family_Code, row.Item, row.Site, row.Article_Desc, row.Vendor_Id, row.Vendor_Name, row.PO_Index, row.PO_Week_Date,
-                           row.PO_Week, row.PO_Year, row.POs, row.Item_Volume, row.Volume, row.Wos, row.PO_Volume, row.SS_Weeks, row.WOS_SS_Ratio)
+                           row.PO_Week, row.PO_Year, row.POs, row.Item_Volume, row.Volume, row.Wos, row.PO_Volume, row.SS_Weeks, row.WOS_SS_Ratio, row.WeeksAfterLT)
 
         conn.commit()
     except Exception as e:
@@ -259,7 +266,7 @@ def writePODataOutSummaryMasterDB(vendorId,timeStr):
 
 def writePODataOutSummaryMasterDBT():
     try:
-        data = pd.read_csv(r'S:\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\PO_Data_Summary_Out_Master_DB_2023_09_18_15_36_20006201.csv')
+        data = pd.read_csv(r'\\File-Share\Bobs_Share\Merchandising_Shared\Supply Chain Automation\ReplenishOpt\Outputs\PO_Data_Summary_Out_Master_DB_2023_09_18_15_36_20006201.csv')
         df = pd.DataFrame(data)
 
         cursor = conn.cursor()
@@ -327,16 +334,81 @@ def clearTables(vendorId):
         print('Error in Deletion' + str(e))
         sys.exit("Error message")
 
+def writeTables(vendorList):
+
+    db_conn = f'mssql://@{server}/{db}?driver={driver}'
+    engine = sqlalchemy.create_engine(db_conn)
+    # cnx = engine.connect()
+
+    df = pd.read_sql_query('''SELECT *  FROM [SupplyChain].[opt].[Item_Master]''', con=engine)
+    df.to_csv('Item_Master.csv', index=False)
+
+    df = pd.read_sql_query('''SELECT *  FROM [SupplyChain].[opt].[Plot_Data_out_stage]''', con=engine)
+    df.to_csv('Plot_Data_out_stage.csv', index=False)
+
+    df = pd.read_sql_query('''SELECT *  FROM [SupplyChain].[opt].[Po_data_summary_out_stage]''', con=engine)
+    df.to_csv('Po_data_summary_out_stage.csv', index=False)
+
+    for vendorId in vendorList:
+        df = pd.read_sql_query('SELECT *  FROM [SupplyChain].[opt].[PO_Exception_out_stage_' + vendorId + ']', con=engine)
+        df.to_csv('PO_Exception_out_stage_' + vendorId + '.csv', index=False)
+
+    df = pd.read_sql_query('''SELECT *  FROM [SupplyChain].[opt].[Po_Performance_Out_stage]''', con=engine)
+    df.to_csv('Po_Performance_Out_stage.csv', index=False)
+
+    df = pd.read_sql_query('''SELECT *  FROM [SupplyChain].[opt].[StockOut_Summary_out_stage]''', con=engine)
+    df.to_csv('StockOut_Summary_out_stage.csv', index=False)
+
+def temp():
+    vendorId = "20013685"
+    timeStr = "2023_11_18_18_37_"
+
+    data = pd.read_csv(r'D:\Scripts\OPT\RepModel\Opt\item_master.csv')
+    df = pd.DataFrame(data)
+    df = df.replace({'': 0, ' ': 0, float('NaN'): 0})
+    df.to_csv(r"D:/Scripts/OPT/RepModel/Opt/item_master.csv", index=False)
+
+    clearTables(vendorId)
+    clearAndWriteItemMaster()
+    writePlotDataOut(vendorId, timeStr)
+    writePODataOutSummaryMasterDB(vendorId, timeStr)
+    # writePoPerformanceOut(vendorId, timeStr)
+    writeStockOutData(vendorId, timeStr)
+
+    createExcepTable(vendorId)
+    writeExcepOutData(vendorId, timeStr)
+
+    # data = pd.read_csv(r'D:\Scripts\OPT\RepModel\Opt\item_master.csv')
+    # df = pd.DataFrame(data)
+    # df = df.replace({'': 0, ' ': 0, float('NaN'): 0})
+    #
+    # df.to_csv(r"D:/Scripts/OPT/RepModel/Opt/item_master_m.csv", index=False)
 
 if __name__ == '__main__':
+
+    # temp()
+    # sys.exit()
+
+    # writeTables(vendorList)
+    # sys.exit()
+
+
+    # vendorList = readVendorList()
+    # writeTables(vendorList)
+    # sys.exit()
+
+    # writePODataOutSummaryMasterDB('20006201', '2023_10_30_09_18_')
+    # sys.exit()
 
     # writePODataOutSummaryMasterDBT()
     # sys.exit()
 
     now = datetime.now()
     timeStr = now.strftime("%Y") + '_' + now.strftime("%m") + '_' + now.strftime("%d") + '_' + now.strftime("%H_%M_")
+    # timeStr = "2023_11_20_22_35_"
 
     vendorList = readVendorList()
+
     for vendorId in vendorList:
         createDir(vendorId, timeStr)
         prepareItemDC(vendorId)
@@ -353,3 +425,5 @@ if __name__ == '__main__':
 
         createExcepTable(vendorId)
         writeExcepOutData(vendorId,timeStr)
+
+    writeTables(vendorList)
